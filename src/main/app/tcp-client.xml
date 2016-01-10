@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json="http://www.mulesoft.org/schema/mule/json"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tcp="http://www.mulesoft.org/schema/mule/tcp"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/tcp http://www.mulesoft.org/schema/mule/tcp/current/mule-tcp.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+
+	<http:listener-config name="HTTP_Listener_Configuration"
+		host="0.0.0.0" port="8086" doc:name="HTTP Listener Configuration" />
+	<flow name="tcp-clientFlow">
+		<http:listener config-ref="HTTP_Listener_Configuration"
+			path="/" doc:name="HTTP">
+			<http:response-builder>
+				<http:header headerName="Content-Type" value="application/json" />
+			</http:response-builder>
+		</http:listener>
+		<logger level="INFO" message="#[payload]" category="tcpclient" />
+
+		<json:json-to-object-transformer
+			doc:name="JSON to Object" returnClass="User" />
+		<logger level="INFO" message="#[payload]" category="tcpclient" />
+
+		<tcp:outbound-endpoint exchange-pattern="request-response"
+			host="localhost" port="5000" responseTimeout="10000" doc:name="TCP" />
+		<set-payload value="data received." />
+	</flow>
+</mule>
